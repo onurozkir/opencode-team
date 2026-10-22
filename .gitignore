@@ -1,0 +1,9 @@
+# opencode local data (cache, session database, logs)
+.opencode/
+*.log
+
+# team stage artifacts (per project)
+.team/
+
+# macOS
+.DS_Store

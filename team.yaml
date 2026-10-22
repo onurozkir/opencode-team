@@ -1,0 +1,176 @@
+# OpenCode Team — pipeline definition
+#
+# This file is configuration, not code. Add or remove stages, or open the gates,
+# by editing it. Nothing in the code needs to change.
+#
+# Precedence:
+#   1) ./team.yaml                     (in the project — project-specific override)
+#   2) ~/.config/opencode/team.yaml    (this repo — global default)
+#
+# Output language: code and code documentation (README, LICENSE, CHANGELOG) in
+# English. Everything else (PRD, research, design, marketing) in the user's
+# language — Turkish or English.
+
+version: 1
+
+languages:
+  code: en
+  code_docs: en
+  artifacts: user
+
+# Where stages write their artifacts
+artifact_dir: .team
+
+# Default profile. The orchestrator picks "new" in an empty directory and
+# "change" in an existing repository, unless the user says otherwise.
+default_profile: new
+
+profiles:
+  # Starting a new product from scratch
+  new:
+    - research
+    - prd
+    - backlog
+    - ux
+    - brand
+    - architecture
+    - build
+    - qa
+    - security
+    - docs
+    - release
+    - launch
+  # Changing an existing product
+  change:
+    - research
+    - prd
+    - architecture
+    - build
+    - qa
+
+stages:
+  - id: research
+    title: Market and user research
+    agent: analyst
+    skill: team-market-research
+    gate: true
+    output: .team/01-research.md
+    brief: >
+      Research the market context, competitors, target user and niche. Cite
+      sources, do not guess. End with a decision table: what problem is solved,
+      for whom, how it differs from the competition, which risks exist.
+
+  - id: prd
+    title: Product requirements document
+    agent: pm
+    skill: team-prd
+    gate: true
+    output: .team/02-prd.md
+    brief: >
+      Write a PRD based on the previous stage's research. Scope, out of scope,
+      user stories with acceptance criteria, success metrics, risks.
+
+  - id: backlog
+    title: Epics and stories
+    agent: po
+    skill: to-tickets
+    gate: true
+    output: .team/03-backlog.md
+    brief: >
+      Break the PRD into independent, verifiable units of work. Every unit needs
+      acceptance criteria and dependencies. Order them as vertical slices: each
+      slice delivers value on its own.
+
+  - id: ux
+    title: UX design
+    agent: ux
+    skill: team-ux
+    gate: true
+    output: .team/04-ux.md
+    brief: >
+      Define screen flows, states (empty, error, loading, populated) and the
+      component inventory. Accessibility must meet WCAG 2.1 AA.
+
+  - id: brand
+    title: Brand and logo
+    agent: brand
+    skill: logo-design
+    gate: true
+    output: .team/05-brand.md
+    brief: >
+      Produce the brand identity from the PRD and UX: logo concepts (get
+      approval at the checkpoint), colour palette, lockups, favicon and app-icon
+      set, and a brand guide. Deliverables go in the brand/ directory. Use the
+      logo-design skill.
+
+  - id: architecture
+    title: Technical architecture
+    agent: architect
+    skill: team-architecture
+    gate: true
+    output: .team/06-architecture.md
+    brief: >
+      Data model, API contract, module boundaries, technology choices with
+      reasoning, scalability and security notes. Every decision needs a
+      rationale and the alternatives that were rejected.
+
+  - id: build
+    title: Implementation
+    agent: fe
+    skill: tdd
+    gate: true
+    output: .team/07-build.md
+    support: [be]
+    brief: >
+      Implement the approved architecture. Tests are written first. Frontend and
+      backend work can run in parallel; merge once both are done.
+
+  - id: qa
+    title: Testing and quality assurance
+    agent: qa
+    skill: team-qa
+    gate: true
+    output: .team/08-qa.md
+    brief: >
+      Write and run tests that cover the acceptance criteria. Fix what fails,
+      then verify again. Tests are versioned alongside the code.
+
+  - id: security
+    title: Security review
+    agent: security
+    skill: team-security-review
+    gate: true
+    output: .team/09-security.md
+    brief: >
+      Review authentication, authorization, input validation, secret management
+      and dependency risk. Fix findings before moving on.
+
+  - id: docs
+    title: Technical documentation
+    agent: docs
+    skill: team-docs
+    gate: true
+    output: .team/10-docs.md
+    brief: >
+      Write the README, user guide and API documentation. Only document commands
+      you have actually verified. README and API docs in English.
+
+  - id: release
+    title: Version and deployment
+    agent: devops
+    skill: team-release
+    gate: true
+    output: .team/11-release.md
+    brief: >
+      Version number, CHANGELOG, deployment steps, CI/CD and the rollback plan.
+      CHANGELOG and README in English.
+
+  - id: launch
+    title: Marketing and launch
+    agent: marketing
+    skill: team-marketing
+    gate: true
+    output: .team/12-launch.md
+    brief: >
+      Positioning, message, target audience, channel plan, launch copy and
+      measurable success metrics.
