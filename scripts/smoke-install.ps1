@@ -7,6 +7,7 @@ $shell = (Get-Process -Id $PID).Path
 $work = Join-Path ([IO.Path]::GetTempPath()) ('opencode-team-install-' + [guid]::NewGuid().ToString('N'))
 $oldPath = $env:PATH
 $oldConfig = $env:OPENCODE_CONFIG_DIR
+$oldProfile = $env:USERPROFILE
 $utf8 = New-Object Text.UTF8Encoding($false)
 $script:assertions = 0
 
@@ -183,9 +184,27 @@ try {
     Assert ($hint -match 'default_agent') 'missing setting must print a configuration hint'
     Assert ([IO.File]::ReadAllText((Join-Path $jsoncConfig 'opencode.json')) -ceq $jsonc) 'JSONC must remain unchanged'
 
+    Write-Host 'default user profile and wrong or unavailable skill targets'
+    $env:USERPROFILE = Join-Path $work 'user profile'
+    Run-Installer '' | Out-Null
+    Assert-Link (Join-Path $env:USERPROFILE '.config/opencode/agents') (Join-Path $repo 'agents')
+    $wrong = Join-Path $jsoncConfig 'team.yaml'
+    [IO.File]::Delete($wrong)
+    New-Item -ItemType SymbolicLink -Path $wrong -Target (Join-Path $repo 'README.md') | Out-Null
+    Run-Installer $jsoncConfig @('-Check') $false | Out-Null
+    Run-Installer $jsoncConfig | Out-Null
+    $brokenSkill = Join-Path $jsoncConfig 'skills/team-build'
+    [IO.Directory]::Delete($brokenSkill)
+    $skillTarget = Join-Path $work 'external-skill'
+    [IO.Directory]::CreateDirectory($skillTarget) | Out-Null
+    New-Item -ItemType SymbolicLink -Path $brokenSkill -Target $skillTarget | Out-Null
+    [IO.Directory]::Delete($skillTarget)
+    Run-Installer $jsoncConfig @('-Check') $false | Out-Null
+
     Write-Host "installer smoke: OK ($script:assertions assertions)"
 } finally {
     $env:PATH = $oldPath
     $env:OPENCODE_CONFIG_DIR = $oldConfig
+    $env:USERPROFILE = $oldProfile
     if (Test-Path -LiteralPath $work) { Remove-Fixture $work }
 }

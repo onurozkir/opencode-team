@@ -83,7 +83,9 @@ function Compact-Index {
     Write-Host "compacted INDEX.md: $($lines.Count) -> $($unique.Count) lines"
 }
 try {
-    if ($Role -and $roles -cnotcontains $Role) { throw "Unknown role: $Role. Use a role from team.yaml." }
+    if ($Role -and ($Role -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]*$' -or $Role -match '^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$')) {
+        throw "Unsafe role name: $Role. Use letters, digits, underscores or hyphens and avoid Windows device names."
+    }
     Assert-SafePath $memory
     $selected = if ($Role) { @($Role) } else { $roles }
     foreach ($name in $selected) { Compact-Log $name }

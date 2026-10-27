@@ -113,6 +113,12 @@ try {
     try { Run-Compactor '' 'analyst' } finally { Pop-Location }
     Assert ((Count-Entries $cwdLog) -eq 10) 'default memory path must use target project CWD'
 
+    Write-Host 'explicit custom role'
+    $customLog = Join-Path $memory 'log/researcher.md'
+    Write-Lines $customLog (@('# researcher log', '') + @(Entries 1 41))
+    Run-Compactor $memory 'researcher'
+    Assert ((Count-Entries $customLog) -eq 10) 'explicit safe custom roles must work like the Bash helper'
+
     Write-Host 'unsafe role/date and linked memory protection'
     Run-Compactor $memory '../outside' $false
     $badLines = @('# analyst log', '') + @(Entries 1 41)

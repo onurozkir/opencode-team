@@ -39,6 +39,17 @@ function Test-Owned($Entry) {
     $target = Get-LinkTarget $Entry
     return $null -ne $target -and $target.StartsWith($repo + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)
 }
+function Test-AvailableEntry($Entry) {
+    # Test-Path may report a dangling directory link as present on Windows.
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    $current = $Entry
+    while ($null -ne $current -and (Test-Link $current)) {
+        $target = Get-LinkTarget $current
+        if (-not $target -or -not $seen.Add($target)) { return $false }
+        $current = Get-Entry $target
+    }
+    return $null -ne $current
+}
 function Assert-RealParents([string]$Path) {
     $current = [IO.Path]::GetFullPath($Path)
     while ($current) {
@@ -145,7 +156,7 @@ try {
         foreach ($skill in $skills) {
             $name = 'skills/' + $skill.Name
             $entry = Get-Entry (Join-Path $config $name)
-            if ($null -eq $entry) { Write-Host "  MISSING $name"; $ok = $false }
+            if (-not (Test-AvailableEntry $entry)) { Write-Host "  MISSING $name"; $ok = $false }
             elseif ((Test-Owned $entry) -and ((Get-LinkTarget $entry) -ne $skill.FullName -or -not (Test-Path -LiteralPath $entry.FullName))) {
                 Write-Host "  WRONG target: $name"; $ok = $false
             } else { Write-Host "  OK $name (local/external entries are preserved)" }
