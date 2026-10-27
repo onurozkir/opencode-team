@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $roles = @('analyst','pm','po','ux','brand','architect','fe','be','qa','security','docs','devops','marketing','orchestrator')
 $memory = if ($env:MEMORY_DIR) { $env:MEMORY_DIR } else { Join-Path (Get-Location).Path '.team/memory' }
+$memory = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($memory)
 $memory = [IO.Path]::GetFullPath($memory).TrimEnd('\', '/')
 $utf8 = New-Object Text.UTF8Encoding($false)
 

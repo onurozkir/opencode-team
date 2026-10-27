@@ -29,11 +29,16 @@ function Remove-Fixture([string]$Path) {
         [IO.Directory]::Delete($Path)
     } else { [IO.File]::Delete($Path) }
 }
-function Run-Installer([string]$Config, [string[]]$Arguments = @(), [bool]$Success = $true) {
+function Run-Installer([string]$Config, [string[]]$Arguments = @(), [bool]$Success = $true, [string]$StartDirectory = '') {
     $env:OPENCODE_CONFIG_DIR = $Config
     $start = New-Object Diagnostics.ProcessStartInfo
     $start.FileName = $shell
     $start.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $installer + '" ' + ($Arguments -join ' ')
+    if ($StartDirectory) {
+        $start.WorkingDirectory = $StartDirectory
+        $command = "Set-Location -LiteralPath '" + (Get-Location).Path.Replace("'", "''") + "'; `$global:LASTEXITCODE = 0; & '" + $installer.Replace("'", "''") + "' " + ($Arguments -join ' ') + '; exit $LASTEXITCODE'
+        $start.Arguments = '-NoProfile -ExecutionPolicy Bypass -EncodedCommand ' + [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
+    }
     $start.UseShellExecute = $false
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
@@ -200,6 +205,15 @@ try {
     New-Item -ItemType SymbolicLink -Path $brokenSkill -Target $skillTarget | Out-Null
     [IO.Directory]::Delete($skillTarget)
     Run-Installer $jsoncConfig @('-Check') $false | Out-Null
+
+    Write-Host 'relative config override after Set-Location'
+    $relativeRoot = Join-Path $work 'changed-location'
+    $relativeProject = Join-Path $relativeRoot 'project'
+    Write-Text (Join-Path $relativeRoot 'config/skills') 'outside marker'
+    [IO.Directory]::CreateDirectory((Join-Path $relativeProject 'config')) | Out-Null
+    Push-Location $relativeProject
+    try { Run-Installer 'config' @('-Uninstall') $true $relativeRoot | Out-Null } finally { Pop-Location }
+    Assert ([IO.File]::ReadAllText((Join-Path $relativeRoot 'config/skills')) -eq 'outside marker') 'relative override must not use process-start config'
 
     Write-Host "installer smoke: OK ($script:assertions assertions)"
 } finally {

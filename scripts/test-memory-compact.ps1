@@ -19,13 +19,20 @@ function Write-Lines([string]$Path, [string[]]$Lines) {
 function Entries([int]$Start, [int]$End, [string]$Month = '2026-10') {
     for ($i = $Start; $i -le $End; $i++) { '- {0}-{1:00} | research | fact | entry {2} | artifact' -f $Month, (($i - 1) % 28 + 1), $i }
 }
-function Run-Compactor([string]$Memory, [string]$Role = '', [bool]$Success = $true) {
+function Run-Compactor([string]$Memory, [string]$Role = '', [bool]$Success = $true, [string]$StartDirectory = '') {
     $env:MEMORY_DIR = $Memory
     $start = New-Object Diagnostics.ProcessStartInfo
     $start.FileName = $shell
     $start.WorkingDirectory = (Get-Location).Path
     $start.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $helper + '"'
     if ($Role) { $start.Arguments += ' -Role "' + $Role + '"' }
+    if ($StartDirectory) {
+        $start.WorkingDirectory = $StartDirectory
+        $command = "Set-Location -LiteralPath '" + (Get-Location).Path.Replace("'", "''") + "'; `$global:LASTEXITCODE = 0; & '" + $helper.Replace("'", "''") + "'"
+        if ($Role) { $command += " -Role '" + $Role.Replace("'", "''") + "'" }
+        $command += '; exit $LASTEXITCODE'
+        $start.Arguments = '-NoProfile -ExecutionPolicy Bypass -EncodedCommand ' + [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
+    }
     $start.UseShellExecute = $false
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
@@ -118,6 +125,19 @@ try {
     Write-Lines $customLog (@('# researcher log', '') + @(Entries 1 41))
     Run-Compactor $memory 'researcher'
     Assert ((Count-Entries $customLog) -eq 10) 'explicit safe custom roles must work like the Bash helper'
+
+    Write-Host 'relative memory override after Set-Location'
+    $relativeRoot = Join-Path $work 'changed-location'
+    $relativeProject = Join-Path $relativeRoot 'project'
+    $outsideIndex = Join-Path $relativeRoot 'memory/INDEX.md'
+    Write-Lines $outsideIndex ([string[]](1..61 | ForEach-Object { "outside fact $_" }))
+    $relativeLog = Join-Path $relativeProject 'memory/log/analyst.md'
+    Write-Lines $relativeLog (@('# analyst log', '') + @(Entries 1 41))
+    Write-Lines (Join-Path $relativeProject 'memory/INDEX.md') @('current project')
+    Push-Location $relativeProject
+    try { Run-Compactor 'memory' '' $true $relativeRoot } finally { Pop-Location }
+    Assert ((Count-Entries $relativeLog) -eq 10) 'relative memory must use current PowerShell location'
+    Assert ([IO.File]::ReadAllLines($outsideIndex).Count -eq 61) 'process-start memory must remain untouched'
 
     Write-Host 'unsafe role/date and linked memory protection'
     Run-Compactor $memory '../outside' $false

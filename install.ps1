@@ -18,6 +18,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $repo = [IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\', '/')
 $config = if ($env:OPENCODE_CONFIG_DIR) { $env:OPENCODE_CONFIG_DIR } else { Join-Path $env:USERPROFILE '.config/opencode' }
+$config = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($config)
 $config = [IO.Path]::GetFullPath($config).TrimEnd('\', '/')
 $core = @('agents', 'commands', 'team.yaml', 'team/AGENTS.md')
 $skills = @(Get-ChildItem -LiteralPath (Join-Path $repo 'skills') -Directory | Where-Object { $_.Name -like 'team-*' })

@@ -72,6 +72,15 @@ opencode
 
 The installer prints a JSON snippet containing paths for that actual directory. Merge it into your existing `opencode.json` to enable the orchestrator and global instructions; preserve provider/model settings. The installer does not edit JSON or JSONC.
 
+Alternatively, for the default config directory, you can supply the team settings only to the current terminal without editing your configuration file:
+
+```powershell
+$env:OPENCODE_CONFIG_CONTENT = '{"default_agent":"orchestrator","instructions":["~/.config/opencode/team/AGENTS.md","~/.config/opencode/team.yaml"]}'
+opencode
+```
+
+For a custom config directory, use the instruction paths printed by the installer. If you already use `OPENCODE_CONFIG_CONTENT`, merge these settings into its existing value instead of replacing it.
+
 Verify or uninstall from the same elevated shell (or PowerShell 7 with Developer Mode):
 
 ```powershell
@@ -145,6 +154,19 @@ OpenCode Team, I want to build a task manager web app.
 The orchestrator will start the pipeline and ask for your approval at each gate.
 
 ## Troubleshooting
+
+### Windows: `Database is not empty and has no session table`
+
+This can occur when OpenCode 1.x opens a data directory previously migrated by OpenCode 2. It is separate from the team installer: a v2 database has `session_v2` instead of the v1 `session` table. See the [upstream report](https://github.com/anomalyco/opencode/issues/56764).
+
+Keep that database and use a separate data directory for your 1.x session:
+
+```powershell
+$env:XDG_DATA_HOME = Join-Path $env:USERPROFILE '.local/share/opencode-v1'
+opencode --agent orchestrator
+```
+
+This environment setting applies to the current terminal and its child processes. It preserves the original database and uses fresh v1 session/authentication data; connect your provider in the new environment if needed. The global team configuration remains in `%USERPROFILE%\.config\opencode` (or `OPENCODE_CONFIG_DIR`). It does not migrate v2 sessions. Do not delete the old database to fix this error.
 
 ### `opencode: command not found`
 

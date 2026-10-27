@@ -74,7 +74,7 @@
 
 **Interfaces:** Use installed OpenCode `1.19.4`; discovery only (`opencode agent list`, `opencode debug ...`), with no provider calls. Do not print provider credentials or whole user configuration.
 
-- [ ] Install into a temporary isolated config with the actual binary and verify the 14 team agents, 19 commands, and 13 team skills are discovered using bounded output/parsed JSON. Verify default-agent/instruction resolution with a disposable `opencode.json`.
-- [ ] Inspect only paths/collisions in the actual user config, run the installer there when permitted, and run `-Check`. Preserve all existing entries; never edit user JSON. Report any necessary snippet or collision without overwriting it.
-- [ ] Use `requesting-code-review` for a fresh whole-branch review. Correct actionable issues and rerun the tests affected by fixes.
-- [ ] Use `verification-before-completion`, inspect the final diff/status, and record exactly which checks passed or could not run. Preserve implementation in the task branch and show the runnable Windows command, any remaining manual config step, and verification limits. Do not publish or merge without a request.
+- [x] Install into a temporary isolated config with the actual binary and verify the 14 team agents, 19 commands, and 13 team skills are discovered using bounded output/parsed JSON. Verify default-agent/instruction resolution with a disposable `opencode.json`.
+- [x] Inspect only paths/collisions in the actual user config, run the installer there when permitted, and run `-Check`. Preserve all existing entries; never edit user JSON. Report any necessary snippet or collision without overwriting it.
+- [x] Use `requesting-code-review` for a fresh whole-branch review. Correct actionable issues and rerun the tests affected by fixes.
+- [x] Use `verification-before-completion`, inspect the final diff/status, and record exactly which checks passed or could not run. Preserve implementation in the task branch and show the runnable Windows command, any remaining manual config step, and verification limits. Do not publish or merge without a request.
