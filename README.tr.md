@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/opencode-team.webp" alt="OpenCode Team" width="480" height="240">
+  <img src="./assets/opencode-team.svg" alt="OpenCode Team">
 </p>
 
 <h1 align="center">OpenCode Team</h1>
@@ -225,6 +225,7 @@ Proje-yerel ajan hafızası da `.team/` altında bulunur:
 Klasör içinde düz dosyalar. Veritabanı yok, framework yok, git'te difflenebilir ve insan her aşamada devreye girebilir.
 
 ## Tasarım notları
+
 - [Proje-yerel ajan hafızası](./docs/rfcs/0001-project-memory.md) — orchestrator ve tüm uzman ajanların paylaştığı küçük `.team/memory/` için kabul edilmiş RFC.
 
 ## Hafıza
@@ -274,14 +275,11 @@ Tam dokümantasyon sitesi [sametcelikbicak.github.io/opencode-team/](https://sam
 - [Kurulum Rehberi](./docs/install.md) — kurulum, kontrol, kaldırma
 - [Boru Hattı & Kapılar](./docs/pipeline.md) — aşamalar ve kapılar nasıl çalışır
 - [Ajanlar](./docs/agents.md) — tüm 14 rol
-- [Komutlar](./docs/commands/) — tüm 19 komut
-- [Yetenekler](./docs/skills/) — tüm 13 yetenek
-- [Aşamalar](./docs/stages) — tüm 12 boru hattı aşaması
+- [Komutlar](./docs/commands.md) — tüm 19 komut
 - [Hafıza](./docs/memory.md) — proje-yerel ajan hafızası
 - [SSS](./docs/faq.md) — sık sorulan sorular
 
 Site bu repodan derlenir ve her `main` içine push'unda yayınlanır.
-
 
 ## Boru hattını özelleştirme
 
