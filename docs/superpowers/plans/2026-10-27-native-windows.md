@@ -1,6 +1,6 @@
 # Native Windows Support Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Install and run OpenCode Team natively on Windows with OpenCode 1.x, preserving user configuration and existing Unix behavior.
 
@@ -42,33 +42,33 @@
 
 **Interfaces:** `install.ps1 [-Check | -Uninstall] [-InstallOpenCode]` exits zero on success; nonzero on errors. Environment: `OPENCODE_CONFIG_DIR`, normal command lookup for `opencode` and `npm`. `-InstallOpenCode` is valid only for install. Test runner uses the current PowerShell executable for child processes.
 
-- [ ] Write `scripts/smoke-install.ps1` with fake `opencode.cmd` returning `1.19.4`, disposable configs, and assertions that install creates the exact links, reinstall succeeds, check succeeds, uninstall preserves repository targets, and check then fails. Run before `install.ps1` exists and confirm the expected missing-script failure.
-- [ ] Implement `install.ps1` using `[CmdletBinding(DefaultParameterSetName='Install')]`, switch parameters, strict error handling, normalized paths, and explicit native exit-code handling. Keep filesystem helpers private to the script; use .NET `Directory.Delete(path)` / `File.Delete(path)` for link-only deletion.
-- [ ] Extend the smoke tests for unchanged JSON/JSONC, missing settings as a hint, spaces/Unicode, invocation from another working directory, and a custom config directory.
-- [ ] Add collision fixtures: local skills survive and check succeeds; core local entries fail unchanged; internal wrong links are repaired; relative external/dangling links and prefix-sibling links survive; linked config child containers cannot redirect writes or uninstall.
-- [ ] Add version/bootstrap fixtures: missing/unparseable/2.x/failing executable fail install/check; uninstall works without OpenCode; existing 1.x skips npm; explicit bootstrap calls `npm install --global opencode-ai@1`; missing/failing npm and failed post-install verification return nonzero. Invalid mode combinations fail.
-- [ ] Implement link preflight, cleanup probes, readable actionable errors, accurate config snippet paths, and the explicit npm bootstrap needed by those fixtures. Run all installer tests under both shells; verify fixture cleanup never traverses link targets.
-- [ ] Commit installer and tests: `feat: add native Windows installer`.
+- [x] Write `scripts/smoke-install.ps1` with fake `opencode.cmd` returning `1.19.4`, disposable configs, and assertions that install creates the exact links, reinstall succeeds, check succeeds, uninstall preserves repository targets, and check then fails. Run before `install.ps1` exists and confirm the expected missing-script failure.
+- [x] Implement `install.ps1` using `[CmdletBinding(DefaultParameterSetName='Install')]`, switch parameters, strict error handling, normalized paths, and explicit native exit-code handling. Keep filesystem helpers private to the script; use .NET `Directory.Delete(path)` / `File.Delete(path)` for link-only deletion.
+- [x] Extend the smoke tests for unchanged JSON/JSONC, missing settings as a hint, spaces/Unicode, invocation from another working directory, and a custom config directory.
+- [x] Add collision fixtures: local skills survive and check succeeds; core local entries fail unchanged; internal wrong links are repaired; relative external/dangling links and prefix-sibling links survive; linked config child containers cannot redirect writes or uninstall.
+- [x] Add version/bootstrap fixtures: missing/unparseable/2.x/failing executable fail install/check; uninstall works without OpenCode; existing 1.x skips npm; explicit bootstrap calls `npm install --global opencode-ai@1`; missing/failing npm and failed post-install verification return nonzero. Invalid mode combinations fail.
+- [x] Implement link preflight, cleanup probes, readable actionable errors, accurate config snippet paths, and the explicit npm bootstrap needed by those fixtures. Run all installer tests under both shells; verify fixture cleanup never traverses link targets.
+- [x] Commit installer and tests: `feat: add native Windows installer`.
 
 ### Task 2: Native memory helper and regression tests
 
 **Interfaces:** `memory-compact.ps1 [[-Role] <string>]` exits zero for successful/no-op compaction, nonzero for unsafe input or unique indexes above 60 lines. Environment: `MEMORY_DIR` or `$PWD/.team/memory`. With no role, process the same 14 roles as the Bash helper, then index; with a role, process only it, then index.
 
-- [ ] Write `scripts/test-memory-compact.ps1` using the current shell in child processes. Assert an empty log succeeds, 40 entries remain unchanged, and 45 entries yield exactly 35 archived + 10 retained. Run before the helper exists and confirm the expected failure.
-- [ ] Implement `skills/team-memory/memory-compact.ps1`: UTF-8 reads/writes, stable exact comparisons, monthly append archives, unique headers, validation before writes, and safe temporary replacements. Index threshold is 60 lines; exact duplicate removal preserves first occurrence; unique overflow fails with unchanged index.
-- [ ] Add tests for repeated compaction (70 archive entries and one header), multiple months, Unicode/case-sensitive facts, 60/61-line indexes, role filtering, default CWD, custom memory path, malformed dates, unsafe role paths, and linked paths that escape the memory directory. Add no-trailing-newline and CRLF inputs.
-- [ ] Run native memory tests under both shells and existing Bash memory regression tests. Confirm retained/archive entries match the intended ordering and failure fixtures preserve data.
-- [ ] Commit helper and tests: `feat: support memory compaction in PowerShell`.
+- [x] Write `scripts/test-memory-compact.ps1` using the current shell in child processes. Assert an empty log succeeds, 40 entries remain unchanged, and 45 entries yield exactly 35 archived + 10 retained. Run before the helper exists and confirm the expected failure.
+- [x] Implement `skills/team-memory/memory-compact.ps1`: UTF-8 reads/writes, stable exact comparisons, monthly append archives, unique headers, validation before writes, and safe temporary replacements. Index threshold is 60 lines; exact duplicate removal preserves first occurrence; unique overflow fails with unchanged index.
+- [x] Add tests for repeated compaction (70 archive entries and one header), multiple months, Unicode/case-sensitive facts, 60/61-line indexes, role filtering, default CWD, custom memory path, malformed dates, unsafe role paths, and linked paths that escape the memory directory. Add no-trailing-newline and CRLF inputs.
+- [x] Run native memory tests under both shells and existing Bash memory regression tests. Confirm retained/archive entries match the intended ordering and failure fixtures preserve data.
+- [x] Commit helper and tests: `feat: support memory compaction in PowerShell`.
 
 ### Task 3: Runtime instructions, docs, and Windows CI
 
 **Interfaces:** Windows invocation uses `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <helper.ps1>` from the target project root, passing `MEMORY_DIR` when configured. Unix invocation remains the existing `.sh`. Config-root precedence is `OPENCODE_CONFIG_DIR`, then the documented default.
 
-- [ ] Update orchestrator and memory skill instructions with concrete native Windows helper invocation and custom config/memory behavior. Update `team/AGENTS.md` installation/config precedence without changing pipeline gates or role behavior.
-- [ ] Add a `windows-latest` CI job with a shell matrix (`powershell`, `pwsh`) running `scripts/smoke-install.ps1` and `scripts/test-memory-compact.ps1`. Keep existing jobs and pinned checkout action.
-- [ ] Update `README.md`, `README.tr.md`, `docs/install.md`, `docs/faq.md`, `CONTRIBUTING.md`, and `docs/memory.md` with native commands, supported shells, Developer Mode/elevation, execution-policy workaround, custom config, optional npm bootstrap, and user-merged JSON snippet. Do not suggest changing machine policy.
-- [ ] Regenerate `docs/reference/*` using the existing Ruby generator. Validate manifests, Bash syntax, existing install/memory tests, reference freshness, and VitePress docs build. If Ruby is absent, locate an available/portable runtime without changing machine installation; report any genuine limits.
-- [ ] Commit runtime instructions, docs and CI: `docs: enable and document native Windows support`.
+- [x] Update orchestrator and memory skill instructions with concrete native Windows helper invocation and custom config/memory behavior. Update `team/AGENTS.md` installation/config precedence without changing pipeline gates or role behavior.
+- [x] Add a `windows-latest` CI job with a shell matrix (`powershell`, `pwsh`) running `scripts/smoke-install.ps1` and `scripts/test-memory-compact.ps1`. Keep existing jobs and pinned checkout action.
+- [x] Update `README.md`, `README.tr.md`, `docs/install.md`, `docs/faq.md`, `CONTRIBUTING.md`, and `docs/memory.md` with native commands, supported shells, Developer Mode/elevation, execution-policy workaround, custom config, optional npm bootstrap, and user-merged JSON snippet. Do not suggest changing machine policy.
+- [x] Regenerate `docs/reference/*` using the existing Ruby generator. Validate manifests, Bash syntax, existing install/memory tests, reference freshness, and VitePress docs build. If Ruby is absent, locate an available/portable runtime without changing machine installation; report any genuine limits.
+- [x] Commit runtime instructions, docs and CI: `docs: enable and document native Windows support`.
 
 ### Task 4: Actual binary verification and final review
 
